@@ -163,20 +163,21 @@
 (quad-locations 0 3 9)
 
 
-(defun set-cell-sets (game)
+(defun set-cell-sets (game &optional area-sets)
   (with-accessors ((size   sudoku-game:size)
                    (length sudoku-game:board-length)) game
     (loop for i below length
           collect (row-locations  i      length) into rows
           collect (col-locations  i      length) into cols
           collect (quad-locations i size length) into quads
-          finally (setf 
-                    (sudoku-game:row-set game) rows
-                    (sudoku-game:col-set game) cols
-                    (sudoku-game:area-set game) quads
-                    (sudoku-game:all-sets game) 
-                    (concatenate 'list rows cols quads)))))
-                      
+          finally (let ((areas (or area-sets quads)))
+                    (setf
+                      (sudoku-game:row-set game) rows
+                      (sudoku-game:col-set game) cols
+                      (sudoku-game:area-set game) areas
+                      (sudoku-game:all-sets game)
+                      (concatenate 'list rows cols areas))))))
+
 
 (defun find-sets-containing-location (location sets)
   (remove-if-not (lambda (set)

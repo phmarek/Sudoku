@@ -79,6 +79,7 @@
 
 (defmethod initialize-instance :after ((frame sudoku) &rest args &key)
   (declare (ignore args))
+  #+nil
   (setf (solution frame)
 	(sudoku-solver:stupid-solver (game frame))))
 
@@ -106,9 +107,15 @@
 	     pane
 	     size
 	     (lambda (r c)
-	       (let ((ink (if (equal (list r c) (selected-cell frame))
+	       (let* ((area-number (loop with pos = (array-row-major-index board r c)
+					 for i from 0
+					 for area in (sudoku-game:area-set game)
+					 if (member pos area)
+					 return i))
+		      (ink (if (or (equal (list r c) (selected-cell frame))
+                                   (not area-number))
 			      +yellow+
-			      +white+)))
+			      (aref (sudoku-game:colors game) area-number))))
 		 (with-output-as-presentation (pane (list r c) 'cell)
 		     (draw-rectangle* pane 0 0 40 40 :ink ink)
                      (if (highlighted *application-frame*)
@@ -125,7 +132,7 @@
 			       20 20
 			       :text-size :small
 			       :align-x :center :align-y :center
-			       :ink +grey+))
+			       :ink +white+))
 		 (let ((ink (if (and (show-errors frame)
 				     (not (eql (aref board r c)
 					       (aref (solution frame) r c))))
@@ -140,8 +147,10 @@
 (defun sudoku ()
   (let* ((games sudoku-example-games:*games*)
 	 (n (random (length games)))
-	 (matrix (aref games n))
-	 (game (sudoku-game:make-classic-game matrix))
+	 (game-def (alexandria:ensure-list (aref games n)))
+	 (matrix (first game-def))
+	 (areas (second game-def))
+	 (game (sudoku-game:make-non-rect-game matrix areas))
 	 (frame (make-application-frame 'sudoku :game game)))
     (run-frame-top-level frame)))
 

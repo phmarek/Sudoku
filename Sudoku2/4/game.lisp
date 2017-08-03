@@ -9,6 +9,7 @@
   ((%size :initarg :size :reader size)
    (%alphabet :initarg :alphabet :reader alphabet)
    (%blank :initarg :blank :reader blank)
+   (%colors :initarg :colors :accessor colors)
    (%board :initarg :board :reader board)
    ;; bit-arrays of allowed values for each cell
    (%allowed :initform nil :accessor allowed)
@@ -18,6 +19,16 @@
    (%areas :initform nil :accessor area-set)
    ;; all these areas in one list.
    (%all :initform nil :accessor all-sets)))
+
+
+(defun make-colors (length)
+  (coerce (mapcar (lambda (i)
+                    (clim:make-ihs-color (- 0.95 (* 0.16 (mod i 2)))
+                                         (mod (/ (* 1 i) length) 1d0)
+                                         (- 0.9 (* 0.3 (mod i 2))))
+                  (alexandria:iota length))
+          'vector))
+
 
 ;;; take a 9x9 matrix containing numbers 0-9 
 ;;; (where 0 means a blank cell) and produce 
@@ -34,7 +45,28 @@
       :size 3
       :alphabet alphabet
       :blank 0
+      :colors (make-colors (length alphabet))
       :board board)))
+
+
+(defun convert-2d-to-cell-set (length areas)
+  (loop with area-sets = (make-array length :initial-element nil)
+        for i below (* length length)
+        do (push i
+                 (aref area-sets
+                       (row-major-aref areas i)))
+        finally (return (coerce area-sets 'list))))
+
+
+(defun make-non-rect-game (matrix area-array)
+  (let ((game (make-classic-game matrix)))
+    (when area-array
+        (sudoku-solver:set-cell-sets
+          game
+          (convert-2d-to-cell-set (sudoku-game:board-length game)
+                                  area-array)))
+    game))
+
 
 (defun board-length (game)
   (expt (size game) 2))

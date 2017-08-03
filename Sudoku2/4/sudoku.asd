@@ -1,7 +1,7 @@
 (cl:in-package #:asdf-user)
 
 (defsystem :sudoku
-  :depends-on (:mcclim)
+  :depends-on (:mcclim :alexandria)
   :serial t
   :components
   ((:file "packages")

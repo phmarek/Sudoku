@@ -2,10 +2,12 @@
     (:use #:cl)
   (:export #:game
 	   #:make-classic-game
+	   #:make-non-rect-game
 	   #:size
 	   #:alphabet
 	   #:blank
 	   #:board
+	   #:colors
 	   #:allowed
 	   #:row-set
 	   #:col-set
@@ -17,6 +19,7 @@
     (:use #:cl)
   (:export #:stupid-solver
            #:allowed-values-in-cell
+           #:set-cell-sets
            #:solve-one-step))
 
 (defpackage #:sudoku-draw-board
